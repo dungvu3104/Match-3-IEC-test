@@ -49,7 +49,7 @@ public class BoardController : MonoBehaviour
         InputHandle();
     }
 
-    public void StartGame(GameManager gameManager, GameSettings gameSettings, CellBackgroundPool cellPool, ItemViewPool itemViewPool)
+    public void StartGame(GameManager gameManager, GameSettings gameSettings, CellBackgroundPool cellPool, ItemViewPool itemViewPool, Theme theme)
     {
         m_gameManager = gameManager;
 
@@ -59,7 +59,7 @@ public class BoardController : MonoBehaviour
 
         m_cam = Camera.main;
 
-        m_board = new Board(this.transform, gameSettings, cellPool, itemViewPool);
+        m_board = new Board(this.transform, gameSettings, cellPool, itemViewPool, theme);
 
         Fill();
     }

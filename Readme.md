@@ -25,4 +25,21 @@ Board.cs gọi item.SetViewPool(m_itemViewPool) trước mỗi SetView() (trong 
 Item.cs dùng pool.Get() thay cho Instantiate, và pool.Return() thay cho Destroy trong ExplodeView và Clear
 Kết quả: không còn Instantiate/Destroy liên tục khi player phá item và item spawn mới từ trên 
 
-3.
+3. cache SpriteRenderer trong Item.cs — bỏ GetComponent mỗi lần swap
+Trước: mỗi lần player swap 2 viên, SetSortingLayerHigher() và SetSortingLayerLower() gọi View.GetComponent<SpriteRenderer>() 2 lần
+Sau: thêm field m_spriteRenderer, cache 1 lần duy nhất trong SetView() khi View được tạo
+SetSortingLayerHigher/Lower dùng m_spriteRenderer trực tiếp thay vì GetComponent
+An toàn vì SpriteRenderer luôn tồn tại cùng lifecycle với View — không bao giờ bị stale
+Kết quả: zero GetComponent call trong gameplay, truy cập trực tiếp qua cached reference
+
+II. Theme system cho normal item
+Tạo Theme.cs (ScriptableObject) chứa ThemeName và mảng 7 Sprite tương ứng 7 loại normal item
+Mỗi Theme SO là 1 bộ skin — tạo bao nhiêu theme tùy ý bằng cách right-click Create -> Match3 -> Theme
+GameManager.cs có list m_themes (kéo thả các Theme SO vào) và m_selectedThemeIndex (chọn theme nào bằng index trong Inspector)
+SelectedTheme property trả về theme đang chọn, nếu index không hợp lệ hoặc list rỗng thì trả null (dùng sprite gốc của prefab)
+Theme reference được pass theo chain: GameManager -> BoardController -> Board -> NormalItem
+NormalItem.cs có SetTheme() nhận theme và ApplyThemeSprite() swap sprite trên SpriteRenderer sau khi SetView()
+Board.cs gọi item.SetTheme() và item.ApplyThemeSprite() trong Fill() và FillGapsWithNewItems()
+Kết quả: đổi theme chỉ cần thay đổi selectedThemeIndex trong Inspector, không cần sửa code
+
+III.

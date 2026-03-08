@@ -11,6 +11,8 @@ public class Item
 
     public Transform View { get; private set; }
 
+    private SpriteRenderer m_spriteRenderer;
+
     protected ItemViewPool m_viewPool;
 
     public void SetViewPool(ItemViewPool pool)
@@ -35,6 +37,11 @@ public class Item
                 {
                     View = GameObject.Instantiate(prefab).transform;
                 }
+            }
+
+            if (View != null)
+            {
+                m_spriteRenderer = View.GetComponent<SpriteRenderer>();
             }
         }
     }
@@ -71,26 +78,19 @@ public class Item
 
     public void SetSortingLayerHigher()
     {
-        if (View == null) return;
-
-        SpriteRenderer sp = View.GetComponent<SpriteRenderer>();
-        if (sp)
+        if (m_spriteRenderer != null)
         {
-            sp.sortingOrder = 1;
+            m_spriteRenderer.sortingOrder = 1;
         }
     }
 
 
     public void SetSortingLayerLower()
     {
-        if (View == null) return;
-
-        SpriteRenderer sp = View.GetComponent<SpriteRenderer>();
-        if (sp)
+        if (m_spriteRenderer != null)
         {
-            sp.sortingOrder = 0;
+            m_spriteRenderer.sortingOrder = 0;
         }
-
     }
 
     internal void ShowAppearAnimation()

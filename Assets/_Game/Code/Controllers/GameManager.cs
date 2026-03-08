@@ -49,6 +49,20 @@ public class GameManager : MonoBehaviour
 
     private ItemViewPool m_itemViewPool;
 
+    [Header("Themes")]
+    [SerializeField] private List<Theme> m_themes;
+    [SerializeField] private int m_selectedThemeIndex;
+
+    public Theme SelectedTheme
+    {
+        get
+        {
+            if (m_themes != null && m_selectedThemeIndex >= 0 && m_selectedThemeIndex < m_themes.Count)
+                return m_themes[m_selectedThemeIndex];
+            return null;
+        }
+    }
+
     private void Awake()
     {
         State = eStateGame.SETUP;
@@ -94,7 +108,7 @@ public class GameManager : MonoBehaviour
     public void LoadLevel(eLevelMode mode)
     {
         m_boardController = new GameObject("BoardController").AddComponent<BoardController>();
-        m_boardController.StartGame(this, m_gameSettings, m_cellBackgroundPool, m_itemViewPool);
+        m_boardController.StartGame(this, m_gameSettings, m_cellBackgroundPool, m_itemViewPool, SelectedTheme);
 
         if (mode == eLevelMode.MOVES)
         {

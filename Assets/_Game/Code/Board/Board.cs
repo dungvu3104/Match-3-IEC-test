@@ -29,7 +29,9 @@ public class Board
 
     private ItemViewPool m_itemViewPool;
 
-    public Board(Transform transform, GameSettings gameSettings, CellBackgroundPool cellPool, ItemViewPool itemViewPool)
+    private Theme m_theme;
+
+    public Board(Transform transform, GameSettings gameSettings, CellBackgroundPool cellPool, ItemViewPool itemViewPool, Theme theme)
     {
         m_root = transform;
 
@@ -38,6 +40,8 @@ public class Board
         m_cellPool = cellPool;
 
         m_itemViewPool = itemViewPool;
+
+        m_theme = theme;
 
         this.boardSizeX = gameSettings.BoardSizeX;
         this.boardSizeY = gameSettings.BoardSizeY;
@@ -112,7 +116,9 @@ public class Board
 
                 item.SetType(Utils.GetRandomNormalTypeExcept(types.ToArray()));
                 item.SetViewPool(m_itemViewPool);
+                item.SetTheme(m_theme);
                 item.SetView();
+                item.ApplyThemeSprite();
                 item.SetViewRoot(m_root);
 
                 cell.Assign(item);
@@ -160,7 +166,9 @@ public class Board
 
                 item.SetType(Utils.GetRandomNormalType());
                 item.SetViewPool(m_itemViewPool);
+                item.SetTheme(m_theme);
                 item.SetView();
+                item.ApplyThemeSprite();
                 item.SetViewRoot(m_root);
 
                 cell.Assign(item);

@@ -17,9 +17,32 @@ public class NormalItem : Item
 
     public eNormalType ItemType;
 
+    private Theme m_theme;
+
     public void SetType(eNormalType type)
     {
         ItemType = type;
+    }
+
+    public void SetTheme(Theme theme)
+    {
+        m_theme = theme;
+    }
+
+    public void ApplyThemeSprite()
+    {
+        if (m_theme != null && View != null)
+        {
+            SpriteRenderer sr = View.GetComponent<SpriteRenderer>();
+            if (sr != null)
+            {
+                Sprite sprite = m_theme.GetSpriteForType(ItemType);
+                if (sprite != null)
+                {
+                    sr.sprite = sprite;
+                }
+            }
+        }
     }
 
     protected override string GetPrefabName()
