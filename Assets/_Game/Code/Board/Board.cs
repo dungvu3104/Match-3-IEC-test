@@ -25,11 +25,15 @@ public class Board
 
     private int m_matchMin;
 
-    public Board(Transform transform, GameSettings gameSettings)
+    private CellBackgroundPool m_cellPool;
+
+    public Board(Transform transform, GameSettings gameSettings, CellBackgroundPool cellPool)
     {
         m_root = transform;
 
         m_matchMin = gameSettings.MatchesMin;
+
+        m_cellPool = cellPool;
 
         this.boardSizeX = gameSettings.BoardSizeX;
         this.boardSizeY = gameSettings.BoardSizeY;
@@ -42,16 +46,13 @@ public class Board
     private void CreateBoard()
     {
         Vector3 origin = new Vector3(-boardSizeX * 0.5f + 0.5f, -boardSizeY * 0.5f + 0.5f, 0f);
-        GameObject prefabBG = Resources.Load<GameObject>(Constants.PREFAB_CELL_BACKGROUND);
         for (int x = 0; x < boardSizeX; x++)
         {
             for (int y = 0; y < boardSizeY; y++)
             {
-                GameObject go = GameObject.Instantiate(prefabBG);
-                go.transform.position = origin + new Vector3(x, y, 0f);
-                go.transform.SetParent(m_root);
-
-                Cell cell = go.GetComponent<Cell>();
+                Cell cell = m_cellPool.Get();
+                cell.transform.position = origin + new Vector3(x, y, 0f);
+                cell.transform.SetParent(m_root);
                 cell.Setup(x, y);
 
                 m_cells[x, y] = cell;
@@ -63,6 +64,11 @@ public class Board
         {
             for (int y = 0; y < boardSizeY; y++)
             {
+                m_cells[x, y].NeighbourUp = null;
+                m_cells[x, y].NeighbourRight = null;
+                m_cells[x, y].NeighbourBottom = null;
+                m_cells[x, y].NeighbourLeft = null;
+
                 if (y + 1 < boardSizeY) m_cells[x, y].NeighbourUp = m_cells[x, y + 1];
                 if (x + 1 < boardSizeX) m_cells[x, y].NeighbourRight = m_cells[x + 1, y];
                 if (y > 0) m_cells[x, y].NeighbourBottom = m_cells[x, y - 1];
@@ -669,7 +675,8 @@ public class Board
                 Cell cell = m_cells[x, y];
                 cell.Clear();
 
-                GameObject.Destroy(cell.gameObject);
+                cell.transform.SetParent(m_cellPool.transform);
+                m_cellPool.Return(cell);
                 m_cells[x, y] = null;
             }
         }

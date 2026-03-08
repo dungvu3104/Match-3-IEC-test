@@ -31,7 +31,25 @@ public class BoardController : MonoBehaviour
 
     private bool m_gameOver;
 
-    public void StartGame(GameManager gameManager, GameSettings gameSettings)
+    public void Update()
+    {
+        if (m_gameOver) return;
+        if (IsBusy) return;
+
+        if (!m_hintIsShown)
+        {
+            m_timeAfterFill += Time.deltaTime;
+            if (m_timeAfterFill > m_gameSettings.TimeForHint)
+            {
+                m_timeAfterFill = 0f;
+                ShowHint();
+            }
+        }
+
+        InputHandle();
+    }
+    
+    public void StartGame(GameManager gameManager, GameSettings gameSettings, CellBackgroundPool cellPool)
     {
         m_gameManager = gameManager;
 
@@ -41,7 +59,7 @@ public class BoardController : MonoBehaviour
 
         m_cam = Camera.main;
 
-        m_board = new Board(this.transform, gameSettings);
+        m_board = new Board(this.transform, gameSettings, cellPool);
 
         Fill();
     }
@@ -70,66 +88,6 @@ public class BoardController : MonoBehaviour
     }
 
 
-    public void Update()
-    {
-        if (m_gameOver) return;
-        if (IsBusy) return;
-
-        if (!m_hintIsShown)
-        {
-            m_timeAfterFill += Time.deltaTime;
-            if (m_timeAfterFill > m_gameSettings.TimeForHint)
-            {
-                m_timeAfterFill = 0f;
-                ShowHint();
-            }
-        }
-
-        if (Input.GetMouseButtonDown(0))
-        {
-            var hit = Physics2D.Raycast(m_cam.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
-            if (hit.collider != null)
-            {
-                m_isDragging = true;
-                m_hitCollider = hit.collider;
-            }
-        }
-
-        if (Input.GetMouseButtonUp(0))
-        {
-            ResetRayCast();
-        }
-
-        if (Input.GetMouseButton(0) && m_isDragging)
-        {
-            var hit = Physics2D.Raycast(m_cam.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
-            if (hit.collider != null)
-            {
-                if (m_hitCollider != null && m_hitCollider != hit.collider)
-                {
-                    StopHints();
-
-                    Cell c1 = m_hitCollider.GetComponent<Cell>();
-                    Cell c2 = hit.collider.GetComponent<Cell>();
-                    if (AreItemsNeighbor(c1, c2))
-                    {
-                        IsBusy = true;
-                        SetSortingLayer(c1, c2);
-                        m_board.Swap(c1, c2, () =>
-                        {
-                            FindMatchesAndCollapse(c1, c2);
-                        });
-
-                        ResetRayCast();
-                    }
-                }
-            }
-            else
-            {
-                ResetRayCast();
-            }
-        }
-    }
 
     private void ResetRayCast()
     {
@@ -302,5 +260,53 @@ public class BoardController : MonoBehaviour
         }
 
         m_potentialMatch.Clear();
+    }
+
+    private void InputHandle()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            var hit = Physics2D.Raycast(m_cam.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+            if (hit.collider != null)
+            {
+                m_isDragging = true;
+                m_hitCollider = hit.collider;
+            }
+        }
+
+        if (Input.GetMouseButtonUp(0))
+        {
+            ResetRayCast();
+        }
+
+        if (Input.GetMouseButton(0) && m_isDragging)
+        {
+            var hit = Physics2D.Raycast(m_cam.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+            if (hit.collider != null)
+            {
+                if (m_hitCollider != null && m_hitCollider != hit.collider)
+                {
+                    StopHints();
+
+                    Cell c1 = m_hitCollider.GetComponent<Cell>();
+                    Cell c2 = hit.collider.GetComponent<Cell>();
+                    if (AreItemsNeighbor(c1, c2))
+                    {
+                        IsBusy = true;
+                        SetSortingLayer(c1, c2);
+                        m_board.Swap(c1, c2, () =>
+                        {
+                            FindMatchesAndCollapse(c1, c2);
+                        });
+
+                        ResetRayCast();
+                    }
+                }
+            }
+            else
+            {
+                ResetRayCast();
+            }
+        }
     }
 }
