@@ -11,6 +11,12 @@ public class Item
 
     public Transform View { get; private set; }
 
+    protected ItemViewPool m_viewPool;
+
+    public void SetViewPool(ItemViewPool pool)
+    {
+        m_viewPool = pool;
+    }
 
     public virtual void SetView()
     {
@@ -18,10 +24,17 @@ public class Item
 
         if (!string.IsNullOrEmpty(prefabname))
         {
-            GameObject prefab = Resources.Load<GameObject>(prefabname);
-            if (prefab)
+            if (m_viewPool != null)
             {
-                View = GameObject.Instantiate(prefab).transform;
+                View = m_viewPool.Get(prefabname);
+            }
+            else
+            {
+                GameObject prefab = Resources.Load<GameObject>(prefabname);
+                if (prefab)
+                {
+                    View = GameObject.Instantiate(prefab).transform;
+                }
             }
         }
     }
@@ -98,11 +111,20 @@ public class Item
     {
         if (View)
         {
-            View.DOScale(0.1f, 0.1f).OnComplete(
+            string prefabname = GetPrefabName();
+            Transform viewRef = View;
+            View = null;
+            viewRef.DOScale(0.1f, 0.1f).OnComplete(
                 () =>
                 {
-                    GameObject.Destroy(View.gameObject);
-                    View = null;
+                    if (m_viewPool != null)
+                    {
+                        m_viewPool.Return(prefabname, viewRef);
+                    }
+                    else
+                    {
+                        GameObject.Destroy(viewRef.gameObject);
+                    }
                 }
                 );
         }
@@ -128,12 +150,19 @@ public class Item
 
     internal void Clear()
     {
-        Cell = null;
-
         if (View)
         {
-            GameObject.Destroy(View.gameObject);
+            if (m_viewPool != null)
+            {
+                m_viewPool.Return(GetPrefabName(), View);
+            }
+            else
+            {
+                GameObject.Destroy(View.gameObject);
+            }
             View = null;
         }
+
+        Cell = null;
     }
 }

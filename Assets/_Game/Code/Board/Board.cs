@@ -27,13 +27,17 @@ public class Board
 
     private CellBackgroundPool m_cellPool;
 
-    public Board(Transform transform, GameSettings gameSettings, CellBackgroundPool cellPool)
+    private ItemViewPool m_itemViewPool;
+
+    public Board(Transform transform, GameSettings gameSettings, CellBackgroundPool cellPool, ItemViewPool itemViewPool)
     {
         m_root = transform;
 
         m_matchMin = gameSettings.MatchesMin;
 
         m_cellPool = cellPool;
+
+        m_itemViewPool = itemViewPool;
 
         this.boardSizeX = gameSettings.BoardSizeX;
         this.boardSizeY = gameSettings.BoardSizeY;
@@ -107,6 +111,7 @@ public class Board
                 }
 
                 item.SetType(Utils.GetRandomNormalTypeExcept(types.ToArray()));
+                item.SetViewPool(m_itemViewPool);
                 item.SetView();
                 item.SetViewRoot(m_root);
 
@@ -154,6 +159,7 @@ public class Board
                 NormalItem item = new NormalItem();
 
                 item.SetType(Utils.GetRandomNormalType());
+                item.SetViewPool(m_itemViewPool);
                 item.SetView();
                 item.SetViewRoot(m_root);
 
@@ -288,6 +294,7 @@ public class Board
                 cellToConvert = matches[rnd];
             }
 
+            item.SetViewPool(m_itemViewPool);
             item.SetView();
             item.SetViewRoot(m_root);
 

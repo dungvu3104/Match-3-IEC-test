@@ -47,6 +47,8 @@ public class GameManager : MonoBehaviour
 
     private CellBackgroundPool m_cellBackgroundPool;
 
+    private ItemViewPool m_itemViewPool;
+
     private void Awake()
     {
         State = eStateGame.SETUP;
@@ -60,9 +62,12 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         State = eStateGame.MAIN_MENU;
-        
+
         m_cellBackgroundPool = new GameObject("CellBackgroundPool").AddComponent<CellBackgroundPool>();
         m_cellBackgroundPool.Initialize(m_gameSettings.BoardSizeX * m_gameSettings.BoardSizeY);
+
+        m_itemViewPool = new GameObject("ItemViewPool").AddComponent<ItemViewPool>();
+        m_itemViewPool.Initialize(m_gameSettings.BoardSizeX * m_gameSettings.BoardSizeY);
     }
 
     // Update is called once per frame
@@ -89,7 +94,7 @@ public class GameManager : MonoBehaviour
     public void LoadLevel(eLevelMode mode)
     {
         m_boardController = new GameObject("BoardController").AddComponent<BoardController>();
-        m_boardController.StartGame(this, m_gameSettings, m_cellBackgroundPool);
+        m_boardController.StartGame(this, m_gameSettings, m_cellBackgroundPool, m_itemViewPool);
 
         if (mode == eLevelMode.MOVES)
         {
