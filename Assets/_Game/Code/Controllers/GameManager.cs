@@ -49,6 +49,8 @@ public class GameManager : MonoBehaviour
 
     private ItemViewPool m_itemViewPool;
 
+    private eLevelMode m_currentLevelMode;
+
     [Header("Themes")]
     [SerializeField] private List<Theme> m_themes;
     [SerializeField] private int m_selectedThemeIndex;
@@ -107,6 +109,8 @@ public class GameManager : MonoBehaviour
 
     public void LoadLevel(eLevelMode mode)
     {
+        m_currentLevelMode = mode;
+
         m_boardController = new GameObject("BoardController").AddComponent<BoardController>();
         m_boardController.StartGame(this, m_gameSettings, m_cellBackgroundPool, m_itemViewPool, SelectedTheme);
 
@@ -124,6 +128,20 @@ public class GameManager : MonoBehaviour
         m_levelCondition.ConditionCompleteEvent += GameOver;
 
         State = eStateGame.GAME_STARTED;
+    }
+
+    public void RestartLevel()
+    {
+        ClearLevel();
+
+        if (m_levelCondition != null)
+        {
+            m_levelCondition.ConditionCompleteEvent -= GameOver;
+            Destroy(m_levelCondition);
+            m_levelCondition = null;
+        }
+
+        LoadLevel(m_currentLevelMode);
     }
 
     public void GameOver()
