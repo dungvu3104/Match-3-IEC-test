@@ -153,8 +153,73 @@ public class Board
     }
 
 
+    private Dictionary<NormalItem.eNormalType, int> CountNormalTypes()
+    {
+        Dictionary<NormalItem.eNormalType, int> counts = new Dictionary<NormalItem.eNormalType, int>();
+        foreach (NormalItem.eNormalType t in Enum.GetValues(typeof(NormalItem.eNormalType)))
+        {
+            counts[t] = 0;
+        }
+
+        for (int x = 0; x < boardSizeX; x++)
+        {
+            for (int y = 0; y < boardSizeY; y++)
+            {
+                NormalItem nitem = m_cells[x, y].Item as NormalItem;
+                if (nitem != null)
+                {
+                    counts[nitem.ItemType]++;
+                }
+            }
+        }
+
+        return counts;
+    }
+
+    private NormalItem.eNormalType GetLeastCountTypeExceptNeighbours(Cell cell, Dictionary<NormalItem.eNormalType, int> counts)
+    {
+        HashSet<NormalItem.eNormalType> exclude = new HashSet<NormalItem.eNormalType>();
+
+        Cell[] neighbours = { cell.NeighbourUp, cell.NeighbourBottom, cell.NeighbourLeft, cell.NeighbourRight };
+        for (int i = 0; i < neighbours.Length; i++)
+        {
+            if (neighbours[i] == null) continue;
+            NormalItem nitem = neighbours[i].Item as NormalItem;
+            if (nitem != null)
+                exclude.Add(nitem.ItemType);
+        }
+
+        List<NormalItem.eNormalType> valid = new List<NormalItem.eNormalType>();
+        foreach (var kvp in counts)
+        {
+            if (!exclude.Contains(kvp.Key))
+                valid.Add(kvp.Key);
+        }
+
+        if (valid.Count == 0)
+            return Utils.GetRandomNormalType();
+
+        int minCount = int.MaxValue;
+        for (int i = 0; i < valid.Count; i++)
+        {
+            if (counts[valid[i]] < minCount)
+                minCount = counts[valid[i]];
+        }
+
+        List<NormalItem.eNormalType> best = new List<NormalItem.eNormalType>();
+        for (int i = 0; i < valid.Count; i++)
+        {
+            if (counts[valid[i]] == minCount)
+                best.Add(valid[i]);
+        }
+
+        return best[UnityEngine.Random.Range(0, best.Count)];
+    }
+
     internal void FillGapsWithNewItems()
     {
+        Dictionary<NormalItem.eNormalType, int> counts = CountNormalTypes();
+
         for (int x = 0; x < boardSizeX; x++)
         {
             for (int y = 0; y < boardSizeY; y++)
@@ -164,7 +229,10 @@ public class Board
 
                 NormalItem item = new NormalItem();
 
-                item.SetType(Utils.GetRandomNormalType());
+                NormalItem.eNormalType chosenType = GetLeastCountTypeExceptNeighbours(cell, counts);
+                item.SetType(chosenType);
+                counts[chosenType]++;
+
                 item.SetViewPool(m_itemViewPool);
                 item.SetTheme(m_theme);
                 item.SetView();
